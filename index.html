@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JavaScript First Steps</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky top bar, lesson rail on the left, one lesson at a time in a reading column; code editors span the column. */
+:root {
+  --paper: #F4F6F9;
+  --surface: #FFFFFF;
+  --ink: #17202E;
+  --muted: #586378;
+  --line: #DADFE8;
+  --accent: #2646C4;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E7EBFA;
+  --marker: #FFE14D;
+  --marker-ink: #17202E;
+  --code-inline: #E9EDF4;
+  --code-bg: #151A25;
+  --code-bar: #1E2433;
+  --code-fg: #E2E6EF;
+  --code-muted: #737E94;
+  --con-err: #FF8F94;
+  --con-err-bg: rgba(255, 90, 100, .12);
+  --con-warn: #FFD966;
+  --browser-bg: #FFFFFF;
+  --ok: #157647;
+  --ok-soft: #E1F2E8;
+  --bad: #B3222B;
+  --bad-soft: #FBE5E6;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, Consolas, "Courier New", monospace;
+  --header-h: 60px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F131B; --surface: #161B26; --ink: #E6E9F0; --muted: #9AA3B6; --line: #283043;
+    --accent: #8FA6FF; --accent-ink: #0D1120; --accent-soft: #1B2340;
+    --code-inline: #222939; --code-bg: #0A0D13; --code-bar: #141924;
+    --ok: #5ACF8E; --ok-soft: #12271C; --bad: #FF7B82; --bad-soft: #2C1417;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F131B; --surface: #161B26; --ink: #E6E9F0; --muted: #9AA3B6; --line: #283043;
+  --accent: #8FA6FF; --accent-ink: #0D1120; --accent-soft: #1B2340;
+  --code-inline: #222939; --code-bg: #0A0D13; --code-bar: #141924;
+  --ok: #5ACF8E; --ok-soft: #12271C; --bad: #FF7B82; --bad-soft: #2C1417;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code { font-family: var(--font-code); font-size: .86em; background: var(--code-inline); padding: .1em .35em; border-radius: 4px; }
+mark {
+  color: var(--marker-ink);
+  background: linear-gradient(176deg, transparent 10%, var(--marker) 10%, var(--marker) 90%, transparent 90%);
+  padding: 0 .2em;
+  border-radius: 2px;
+  font-weight: 700;
+}
+button { font: inherit; cursor: pointer; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  min-height: var(--header-h);
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px clamp(16px, 3vw, 28px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); margin-right: auto; }
+.brand-mark {
+  width: 32px; height: 32px; display: grid; place-items: end end; padding: 3px 4px;
+  background: var(--marker); color: var(--marker-ink);
+  font: 600 13px/1 var(--font-code); border-radius: 3px;
+}
+.brand-name { font: 800 19px/1 var(--font-display); letter-spacing: -.01em; }
+.progress { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress-track { width: 90px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+.toggle {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink);
+  border-radius: 999px; padding: 5px 12px 5px 6px; font-size: 14px;
+}
+.toggle .knob { width: 30px; height: 18px; border-radius: 9px; background: var(--line); position: relative; transition: background .2s; }
+.toggle .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); transition: transform .2s; }
+.toggle[aria-pressed="true"] .knob { background: var(--accent); }
+.toggle[aria-pressed="true"] .knob::after { transform: translateX(12px); }
+
+/* ---------- shell ---------- */
+.shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); }
+.rail {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-h));
+  align-self: start;
+  max-height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  padding: 24px 12px 40px 20px;
+  border-right: 1px solid var(--line);
+}
+.rail-group { display: grid; gap: 2px; margin-bottom: 18px; }
+.rail-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 10px 4px; }
+.rail a {
+  display: grid; grid-template-columns: 26px 1fr auto; align-items: baseline; gap: 4px;
+  padding: 6px 10px; border-radius: 6px;
+  color: var(--ink); text-decoration: none; font-size: 15px; line-height: 1.35;
+}
+.rail a:hover { background: var(--accent-soft); }
+.rail a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+.rail .num { font: 12px var(--font-code); opacity: .7; }
+.rail .tick { font-size: 13px; color: var(--ok); }
+.rail a[aria-current="page"] .tick { color: var(--accent-ink); }
+
+main { min-width: 0; padding: 40px clamp(16px, 4vw, 48px) 80px; }
+.page { max-width: 860px; display: grid; gap: 28px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; }
+.prose p { margin: 0; }
+.prose ul, .prose ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+
+/* ---------- lesson head ---------- */
+.eyebrow { font: 600 13px var(--font-code); letter-spacing: .04em; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+.lesson-head { display: grid; gap: 10px; }
+.lesson-head h1 { font-size: clamp(32px, 5vw, 46px); font-weight: 800; letter-spacing: -.02em; }
+.goal { font-size: 19px; color: var(--muted); max-width: 60ch; margin: 0; }
+
+.section-label { font: 600 13px var(--font-code); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; }
+h2 { font-size: 24px; font-weight: 800; }
+
+/* three-languages panel */
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.trio > div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.trio strong { font-family: var(--font-display); font-size: 20px; }
+.trio .role { font: 600 12px var(--font-code); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.trio p { margin: 0; font-size: 15px; }
+
+.ref-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font: 600 12px var(--font-code); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--paper); }
+td code { white-space: nowrap; }
+
+/* ---------- editor ---------- */
+.ed { border-radius: 10px; overflow: hidden; background: var(--code-bg); color: var(--code-fg); border: 1px solid var(--code-bar); }
+.ed-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px 8px 14px; background: var(--code-bar); }
+.ed-label { font: 600 12px var(--font-code); letter-spacing: .06em; text-transform: uppercase; color: var(--code-muted); margin-right: auto; }
+.ed-btn { border: 1px solid #2E3648; background: transparent; color: var(--code-fg); border-radius: 6px; padding: 4px 11px; font-size: 14px; }
+.ed-btn:hover { background: #262E40; }
+.ed-btn.run { background: var(--marker); color: var(--marker-ink); border-color: var(--marker); font-weight: 700; }
+.ed-btn.run:hover { filter: brightness(.95); background: var(--marker); }
+.ed-btn kbd { font: 11px var(--font-code); opacity: .65; margin-left: 4px; }
+.ed-body { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+.gutter, .ed textarea { font: 14px/22px var(--font-code); padding: 12px 0; margin: 0; }
+.gutter { color: var(--code-muted); text-align: right; padding-inline: 12px 10px; user-select: none; overflow: hidden; border-right: 1px solid var(--code-bar); white-space: pre; }
+.ed textarea {
+  width: 100%; border: 0; outline: 0; resize: none; background: transparent; color: var(--code-fg);
+  padding-inline: 14px; white-space: pre; overflow: auto; tab-size: 2; caret-color: var(--marker);
+  max-height: 520px;
+}
+.ed textarea:focus-visible { box-shadow: inset 0 0 0 2px var(--marker); border-radius: 0; outline: 0; }
+.ed-out { border-top: 1px solid var(--code-bar); }
+.browser { background: var(--code-bar); padding: 8px; }
+.browser-bar { display: flex; align-items: center; gap: 6px; padding: 2px 4px 8px; font: 12px var(--font-code); color: var(--code-muted); }
+.browser-bar i { width: 9px; height: 9px; border-radius: 50%; background: #3A4359; display: block; }
+.browser-bar span { margin-left: 8px; background: var(--code-bg); border-radius: 4px; padding: 2px 10px; }
+.browser iframe { display: block; width: 100%; height: 220px; border: 0; border-radius: 4px; background: var(--browser-bg); }
+.sandbox { display: none; }
+.console { padding: 10px 14px 12px; font: 13.5px/1.55 var(--font-code); }
+.console-head { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--code-muted); margin-bottom: 4px; }
+.con-line { white-space: pre-wrap; word-break: break-word; padding: 2px 0; border-bottom: 1px solid #1E2433; }
+.con-line:last-child { border-bottom: 0; }
+.con-line.muted { color: var(--code-muted); font-style: italic; border: 0; }
+.con-line.warn { color: var(--con-warn); }
+.con-line.alert { color: var(--con-warn); }
+.con-line.err { color: var(--con-err); background: var(--con-err-bg); padding: 6px 8px; border-radius: 4px; border: 0; margin: 4px 0; }
+.con-line .where { display: inline-block; font-weight: 600; margin-right: 8px; }
+.con-hint { color: var(--code-fg); font-family: var(--font-body); font-size: 14.5px; margin-top: 4px; white-space: normal; }
+.con-hint code { background: #2A3245; color: var(--code-fg); }
+.caption { font-size: 15.5px; color: var(--muted); margin: 10px 2px 0; max-width: 70ch; }
+.caption code { color: var(--ink); }
+
+/* ---------- static code, mistake, challenge ---------- */
+pre.code { margin: 0; background: var(--code-bg); color: var(--code-fg); font: 14px/1.6 var(--font-code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
+.mistake { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.mistake > div { padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.mistake .wrong { background: var(--bad-soft); }
+.mistake .tag { font: 600 12px var(--font-code); text-transform: uppercase; letter-spacing: .08em; }
+.mistake .wrong .tag { color: var(--bad); }
+.mistake .right .tag { color: var(--ok); }
+.mistake p { margin: 0; font-size: 15.5px; }
+.result { font: 13.5px/1.5 var(--font-code); color: var(--bad); }
+
+.challenge { display: grid; gap: 14px; }
+.challenge .task { background: var(--surface); border: 1px solid var(--line); border-left: 0; border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; position: relative; overflow: hidden; }
+.challenge .task::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--marker); }
+.challenge .task p { margin: 0; }
+.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
+details.reveal { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+details.reveal > summary { padding: 10px 14px; cursor: pointer; font-weight: 700; list-style-position: inside; }
+details.reveal > div { padding: 0 14px 14px; display: grid; gap: 10px; }
+details.reveal p { margin: 0; }
+.reveals { display: grid; gap: 8px; }
+.btn {
+  justify-self: start; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+  border-radius: 6px; padding: 7px 14px; font-weight: 700; font-size: 15px;
+}
+.btn.ghost { background: transparent; color: var(--accent); }
+
+/* ---------- quiz ---------- */
+.quiz { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; }
+.quiz .q { margin: 0; font-weight: 700; font-size: 18px; }
+.quiz .opts { display: grid; gap: 8px; }
+.quiz .opt {
+  text-align: left; border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  border-radius: 8px; padding: 10px 14px; display: flex; gap: 12px; align-items: baseline;
+}
+.quiz .opt:hover:not(:disabled) { border-color: var(--accent); }
+.quiz .opt .key { font: 600 13px var(--font-code); color: var(--muted); }
+.quiz .opt.is-right { border-color: var(--ok); background: var(--ok-soft); }
+.quiz .opt.is-wrong { border-color: var(--bad); background: var(--bad-soft); }
+.quiz .opt:disabled { cursor: default; }
+.quiz .feedback { margin: 0; font-size: 15.5px; }
+.quiz .feedback.good { color: var(--ok); }
+.quiz .feedback.nope { color: var(--bad); }
+
+/* ---------- teaching notes ---------- */
+.notes { display: none; border: 1.5px dashed var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 14px 18px; gap: 8px; }
+.show-notes .notes { display: grid; }
+.notes h3 { font-size: 15px; font-family: var(--font-code); text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 15.5px; }
+
+/* ---------- overview ---------- */
+.hero { display: grid; gap: 14px; padding-bottom: 6px; }
+.hero h1 { font-size: clamp(38px, 7vw, 64px); font-weight: 800; letter-spacing: -.03em; }
+.hero p { margin: 0; font-size: 19px; max-width: 58ch; color: var(--muted); }
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.how > div { border-top: 3px solid var(--ink); padding-top: 10px; display: grid; gap: 4px; align-content: start; }
+.how strong { font-family: var(--font-display); font-size: 18px; }
+.how p { margin: 0; font-size: 15px; color: var(--muted); }
+.session { display: grid; gap: 8px; }
+.session-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.session-head h2 { font-size: 22px; }
+.session-head span { font: 13px var(--font-code); color: var(--muted); }
+.map { display: grid; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.map a {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: baseline;
+  padding: 12px 16px; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line);
+}
+.map a:last-child { border-bottom: 0; }
+.map a:hover { background: var(--accent-soft); }
+.map .num { font: 600 13px var(--font-code); color: var(--muted); }
+.map .t { font-weight: 700; }
+.map .g { display: block; color: var(--muted); font-size: 15px; font-weight: 400; }
+.map .m { font: 13px var(--font-code); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.map .m .tick { color: var(--ok); margin-right: 6px; }
+
+/* ---------- lesson footer ---------- */
+.lesson-foot { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--line); padding-top: 22px; }
+.lesson-foot .spacer { margin-right: auto; }
+.done-btn[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--accent-ink); }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail {
+    position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--line);
+    display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px;
+  }
+  .rail-group { display: contents; }
+  .rail-label { display: none; }
+  .rail a { grid-template-columns: auto auto auto; white-space: nowrap; border: 1px solid var(--line); }
+  main { padding-top: 28px; }
+}
+@media (max-width: 640px) {
+  .trio, .how, .mistake { grid-template-columns: minmax(0, 1fr); }
+  .progress-track { display: none; }
+  .ed-btn kbd { display: none; }
+  body { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#overview">
+    <span class="brand-mark">js</span>
+    <span class="brand-name">JavaScript First Steps</span>
+  </a>
+  <div class="progress" aria-live="polite">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <span id="progress-text">0 of 11 done</span>
+  </div>
+  <button class="toggle" id="notes-toggle" aria-pressed="false" type="button"><span class="knob"></span>Teaching notes</button>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Lessons"></nav>
+  <main id="main"><div class="page" id="page"></div></main>
+</div>
+
+<script>
+/* ============================================================
+   Course content
+   ============================================================ */
+const SESSIONS = [
+  { n: 1, name: "Foundations" },
+  { n: 2, name: "Logic" },
+  { n: 3, name: "The page" }
+];
+
+const LESSONS = [
+{
+  id: "web", session: 1, minutes: 10,
+  title: "How the web fits together",
+  goal: "Name the three languages of a web page and what each one does.",
+  body: `
+    <p>Every web page is built from three languages that work together. Each has one job.</p>
+    <div class="trio">
+      <div><span class="role">Structure</span><strong>HTML</strong><p>What is on the page: headings, paragraphs, images, buttons.</p><p><code>&lt;button&gt;Go&lt;/button&gt;</code></p></div>
+      <div><span class="role">Style</span><strong>CSS</strong><p>How it looks: colors, sizes, spacing, layout.</p><p><code>color: tomato;</code></p></div>
+      <div><span class="role">Behavior</span><strong>JavaScript</strong><p>What it does: reacting to clicks, typing, and changing the page.</p><p><code>button.addEventListener(...)</code></p></div>
+    </div>
+    <p>Think of a house. <mark>HTML</mark> is the walls and rooms, <mark>CSS</mark> is the paint and furniture, and <mark>JavaScript</mark> is the electricity that makes the lights turn on when you flip a switch.</p>
+    <p>This course is about JavaScript, but JavaScript on the web always works with HTML and CSS, so you will see all three.</p>`,
+  examples: [{
+    mode: "page",
+    code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { color: royalblue; }
+  </style>
+</head>
+<body>
+  <h1 id="greeting">Hello!</h1>
+  <button id="btn">Click me</button>
+
+  <script>
+    const btn = document.querySelector("#btn");
+    btn.addEventListener("click", function () {
+      document.querySelector("#greeting").textContent = "You clicked the button!";
+    });
+  <\/script>
+</body>
+</html>`,
+    caption: `The HTML puts a heading and a button on the page. The CSS (inside <code>&lt;style&gt;</code>) colors the heading. The JavaScript (inside <code>&lt;script&gt;</code>) changes the text when you click. Click the button in the preview, then change <code>royalblue</code> to <code>tomato</code> and press Run.`
+  }],
+  quiz: {
+    q: "You want a button to show a message when someone clicks it. Which language handles the click?",
+    options: ["HTML", "CSS", "JavaScript"], answer: 2,
+    why: "HTML creates the button and CSS styles it, but only JavaScript can react when something happens."
+  },
+  notes: [
+    "Open any website and press F12 (or right-click → Inspect). Show the Elements tab (HTML and CSS) and the Console tab (JavaScript). Opening DevTools is the most useful habit they can build.",
+    "Don't explain the example code line by line yet. The point is three languages, three jobs. Every line in it gets explained by lesson 10.",
+    "Ask: “What happens if we delete the &lt;script&gt; part?” Try it. The button still appears but does nothing."
+  ]
+},
+{
+  id: "console", session: 1, minutes: 10,
+  title: "Talking to the console",
+  goal: "Print messages with console.log and read what comes back.",
+  body: `
+    <p><code>console.log()</code> prints a message to the <mark>console</mark>, a panel every browser has for developers. It is how you check what your code is doing.</p>
+    <ul>
+      <li>Text goes inside quotes: <code>"Hello"</code>. Numbers don't need them: <code>42</code>.</li>
+      <li>Each instruction usually goes on its own line and ends with <code>;</code></li>
+      <li>Lines starting with <code>//</code> are comments. JavaScript skips them. They are notes for people.</li>
+    </ul>
+    <p>In a real browser, open the console with <code>F12</code> or <code>Ctrl + Shift + J</code> (<code>Cmd + Option + J</code> on a Mac). On this page, the output shows up under each editor.</p>`,
+  examples: [{
+    mode: "js",
+    code: `// This is a comment. JavaScript skips it.
+console.log("Hello, world!");
+console.log(42);
+console.log(2 + 3);
+console.log("2 + 3");`,
+    caption: "Before you press Run: what will the last two lines print? Why would they be different?"
+  }],
+  mistake: {
+    code: `console.log(Hello);`,
+    result: "ReferenceError: Hello is not defined",
+    fix: `Text needs quotes: <code>console.log("Hello");</code>. Without quotes, JavaScript thinks <code>Hello</code> is the name of something it should already know about.`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "Print three lines: your name, your favorite food, and the number of letters in your first name (as a number, with no quotes).",
+    starter: `// Write your three console.log lines below
+
+`,
+    hint: "Each message gets its own <code>console.log(...)</code> line. Names and foods are text, so they need quotes.",
+    solution: `console.log("Sam");
+console.log("Tacos");
+console.log(3);`
+  },
+  quiz: {
+    q: "What does console.log(10 - 4) print?",
+    options: ["10 - 4", "6", "An error"], answer: 1,
+    why: "Without quotes, JavaScript does the math first and prints the result."
+  },
+  notes: [
+    "Have everyone break the code on purpose: delete one quote and press Run. Getting comfortable with red error messages early pays off for the rest of the course.",
+    "Double quotes and single quotes both work as long as they match. This course uses double quotes everywhere to keep things consistent.",
+    "Get the room to predict before every Run. A wrong prediction followed by a surprise is where the learning happens."
+  ]
+},
+{
+  id: "variables", session: 1, minutes: 15,
+  title: "Variables: boxes for values",
+  goal: "Store values with let and const, and know the three basic types.",
+  body: `
+    <p>A <mark>variable</mark> is a labeled box that holds a value. You create one with <code>let</code> or <code>const</code>, give it a name, and put a value in it with <code>=</code>.</p>
+    <ul>
+      <li><code>const</code> is for values that won't change. <code>let</code> is for values that will. When in doubt, start with <code>const</code>.</li>
+      <li>Names can't contain spaces or start with a number. Join words with capitals, called camelCase: <code>firstName</code>, <code>highScore</code>.</li>
+      <li>Capitals matter: <code>score</code> and <code>Score</code> are two different boxes.</li>
+    </ul>
+    <div class="ref-table-wrap"><table>
+      <thead><tr><th>Type</th><th>What it holds</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td>String</td><td>Text, always in quotes</td><td><code>"Sam"</code> <code>"hello there"</code></td></tr>
+        <tr><td>Number</td><td>Whole numbers and decimals</td><td><code>42</code> <code>3.14</code> <code>-7</code></td></tr>
+        <tr><td>Boolean</td><td>Yes or no</td><td><code>true</code> <code>false</code></td></tr>
+      </tbody>
+    </table></div>`,
+  examples: [{
+    mode: "js",
+    code: `const name = "Sam";
+let score = 0;
+const isLoggedIn = true;
+
+console.log(name);
+console.log(score);
+
+score = score + 10;   // let can change
+console.log(score);
+
+console.log(typeof name);
+console.log(typeof score);
+console.log(typeof isLoggedIn);`,
+    caption: `Read <code>=</code> as “put the value on the right into the box on the left.” It is not “equals” like in math class. <code>score = score + 10</code> means: take what's in score, add 10, put it back.`
+  }],
+  mistake: {
+    code: `const lives = 3;
+lives = 2;`,
+    result: "TypeError: Assignment to constant variable.",
+    fix: `A <code>const</code> can't be changed after it is created. If the value needs to change, use <code>let lives = 3;</code> instead.`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "Create a const called city and a let called age. Add 1 to age (happy birthday), then print both.",
+    starter: `// Your variables here
+
+`,
+    hint: "To add 1, reuse the box: <code>age = age + 1;</code>",
+    solution: `const city = "Orem";
+let age = 20;
+
+age = age + 1;
+
+console.log(city);
+console.log(age);`
+  },
+  quiz: {
+    q: "You're tracking a player's score, which goes up during a game. Which line should you use?",
+    options: ["const score = 0;", "let score = 0;", "score: 0"], answer: 1,
+    why: "The score will change, so it needs let. A const would throw an error the first time you update it."
+  },
+  notes: [
+    "Draw labeled boxes on the whiteboard. Writing a value into a box and erasing it to write a new one makes let vs const concrete.",
+    "Someone will ask about <code>var</code>. It is the older way to make variables. Tell them to use let and const.",
+    "typeof is a nice reveal: JavaScript always knows what kind of value is in a box."
+  ]
+},
+{
+  id: "operators", session: 1, minutes: 15,
+  title: "Math and text",
+  goal: "Do arithmetic, join strings, and build sentences with template literals.",
+  body: `
+    <p>Math works like a calculator: <code>+</code> <code>-</code> <code>*</code> <code>/</code>. The <code>%</code> operator gives the remainder after dividing, which is handy for checking whether a number is even.</p>
+    <p>With text, <code>+</code> joins strings end to end. To mix text and values, a <mark>template literal</mark> is easier to read: wrap the text in backticks <code>\`</code> and put values inside <code>\${ }</code>.</p>
+    <p>The backtick key is usually at the top left of the keyboard, next to <code>1</code>.</p>`,
+  examples: [{
+    mode: "js",
+    code: `console.log(10 + 5);
+console.log(10 * 3);
+console.log(20 / 4);
+console.log(10 % 3);   // remainder
+
+const first = "Ada";
+const last = "Lovelace";
+console.log(first + " " + last);
+
+const age = 36;
+console.log(\`\${first} is \${age} years old.\`);`,
+    caption: `Notice the <code>" "</code> in the middle of the joined name. Without it you'd get AdaLovelace.`
+  }],
+  mistake: {
+    code: `console.log("5" + 3);`,
+    result: "Prints 53, not 8",
+    fix: `When either side of <code>+</code> is a string, JavaScript joins instead of adding. <code>Number("5") + 3</code> gives 8. This matters in lesson 10: anything a user types into a box arrives as text.`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "A meal costs $40. Calculate a 20% tip and the total, then print: The tip is $8 and the total is $48",
+    starter: `const bill = 40;
+const tipPercent = 20;
+
+// Calculate the tip and the total, then print the sentence
+`,
+    hint: "The tip is <code>bill * tipPercent / 100</code>. Inside a template literal, <code>$\${tip}</code> prints a dollar sign followed by the value.",
+    solution: `const bill = 40;
+const tipPercent = 20;
+
+const tip = bill * tipPercent / 100;
+const total = bill + tip;
+
+console.log(\`The tip is $\${tip} and the total is $\${total}\`);`
+  },
+  quiz: {
+    q: `What does "5" + 3 give?`,
+    options: ["8", `"53"`, "An error"], answer: 1,
+    why: `"5" is a string, so + joins the two instead of adding them.`
+  },
+  notes: [
+    "If the group is nervous about math, work the tip out on the board first. The goal is the code, not the arithmetic.",
+    "Order of operations matches math class: * and / before + and -. Parentheses work too.",
+    "Template literals are worth the extra minute. They save beginners from a lot of missing-space bugs."
+  ]
+},
+{
+  id: "conditions", session: 2, minutes: 20,
+  title: "Making decisions",
+  goal: "Run different code depending on whether something is true.",
+  body: `
+    <p>An <mark>if statement</mark> runs code only when a condition is true. Add <code>else</code> for what to do otherwise, and <code>else if</code> to check more options in order. Only one branch ever runs.</p>
+    <div class="ref-table-wrap"><table>
+      <thead><tr><th>Write</th><th>Asks</th></tr></thead>
+      <tbody>
+        <tr><td><code>a === b</code></td><td>Are these the same?</td></tr>
+        <tr><td><code>a !== b</code></td><td>Are these different?</td></tr>
+        <tr><td><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></td><td>Greater than, less than, or equal</td></tr>
+        <tr><td><code>a &amp;&amp; b</code></td><td>Are both true? (and)</td></tr>
+        <tr><td><code>a || b</code></td><td>Is at least one true? (or)</td></tr>
+      </tbody>
+    </table></div>
+    <p>One <code>=</code> puts a value in a box. Three <code>===</code> asks a question.</p>`,
+  examples: [{
+    mode: "js",
+    code: `const temperature = 55;
+
+if (temperature > 80) {
+  console.log("Shorts weather!");
+} else if (temperature > 60) {
+  console.log("Light jacket.");
+} else {
+  console.log("Grab a coat.");
+}
+
+const hasTicket = true;
+const age = 15;
+
+if (hasTicket && age >= 13) {
+  console.log("Enjoy the movie!");
+}`,
+    caption: "Change temperature to 90, then 65, and run it each time. Which line prints?"
+  }],
+  mistake: {
+    code: `let answer = 4;
+
+if (answer = 5) {
+  console.log("Correct!");
+}`,
+    result: "Prints Correct! even though the answer is 4",
+    fix: `A single <code>=</code> puts 5 into answer instead of comparing. Use <code>if (answer === 5)</code>.`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "Write a grade checker. If score is 90 or more, print A. If it is 80 or more, print B. Otherwise print Keep practicing! Test it with 95, 85 and 70.",
+    starter: `let score = 85;
+
+// Your if / else if / else here
+`,
+    hint: "Check the highest grade first. JavaScript stops at the first condition that is true.",
+    solution: `let score = 85;
+
+if (score >= 90) {
+  console.log("A");
+} else if (score >= 80) {
+  console.log("B");
+} else {
+  console.log("Keep practicing!");
+}`
+  },
+  quiz: {
+    q: `What is 5 === "5"?`,
+    options: ["true", "false", "An error"], answer: 1,
+    why: "=== checks the value and the type. A number is never the same as a string."
+  },
+  notes: [
+    "Act it out: one learner is the if. They stand up only when the condition you call out is true.",
+    "Curly braces group the lines that belong to the if. Ask everyone to indent those lines by 2 spaces so the structure is visible.",
+    "If someone finds <code>==</code> online: it converts types before comparing and causes surprises. Always use ===."
+  ]
+},
+{
+  id: "arrays", session: 2, minutes: 20,
+  title: "Lists and loops",
+  goal: "Keep several values in an array and repeat code for each one.",
+  body: `
+    <p>An <mark>array</mark> is a list of values inside square brackets. Each item has a position number called an index, and <strong>counting starts at 0</strong>.</p>
+    <ul>
+      <li><code>.length</code> tells you how many items there are.</li>
+      <li><code>.push(value)</code> adds an item to the end.</li>
+    </ul>
+    <p>A <mark>loop</mark> repeats code. <code>for...of</code> runs once for each item in an array. The counting <code>for</code> loop runs a set number of times.</p>`,
+  examples: [{
+    mode: "js",
+    code: `const fruits = ["apple", "banana", "cherry"];
+
+console.log(fruits[0]);      // first item
+console.log(fruits.length);  // how many
+
+fruits.push("mango");
+console.log(fruits);
+
+for (const fruit of fruits) {
+  console.log("I like " + fruit);
+}
+
+// Counting loop: start at 1, keep going while i <= 5, add 1 each time
+for (let i = 1; i <= 5; i++) {
+  console.log("Count: " + i);
+}`,
+    caption: `<code>i++</code> is shorthand for <code>i = i + 1</code>.`
+  }],
+  mistake: {
+    code: `const colors = ["red", "green", "blue"];
+console.log(colors[3]);`,
+    result: "Prints undefined",
+    fix: `There are 3 items, but their positions are 0, 1 and 2. The last item is <code>colors[colors.length - 1]</code>.`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "Make an array of three friends' names. Use a loop to print Hi, NAME! for each one. Then add a fourth friend with push and print how many friends there are now.",
+    starter: `// Your array and loop here
+`,
+    hint: "<code>for (const friend of friends) { ... }</code> gives you one name at a time in <code>friend</code>.",
+    solution: `const friends = ["Maya", "Leo", "Priya"];
+
+for (const friend of friends) {
+  console.log(\`Hi, \${friend}!\`);
+}
+
+friends.push("Jordan");
+console.log(friends.length);`
+  },
+  quiz: {
+    q: `const pets = ["cat", "dog", "fish"]; What is pets[1]?`,
+    options: [`"cat"`, `"dog"`, `"fish"`], answer: 1,
+    why: `Indexes start at 0, so pets[0] is "cat" and pets[1] is "dog".`
+  },
+  notes: [
+    "Zero-based counting trips up almost everyone. Line learners up and number them starting from 0.",
+    "Someone may notice you can push to a const array. const means the box can't hold a different array; the list inside can still change. Only go into this if asked.",
+    "If an editor freezes, the code probably has a loop that never ends (for example i-- instead of i++). Reload the page."
+  ]
+},
+{
+  id: "functions", session: 2, minutes: 20,
+  title: "Functions",
+  goal: "Package steps into a reusable function with inputs and an output.",
+  body: `
+    <p>A <mark>function</mark> is a named set of steps you can reuse. You define it once, then call it as many times as you like.</p>
+    <ul>
+      <li><strong>Parameters</strong> are the inputs, listed in the parentheses.</li>
+      <li><code>return</code> sends a value back to the code that called the function.</li>
+    </ul>
+    <p>Think of a recipe card. The function is the card, the parameters are the ingredients, and the return value is the finished dish.</p>`,
+  examples: [{
+    mode: "js",
+    code: `// Define the function
+function greet(name) {
+  console.log("Hello, " + name + "!");
+}
+
+// Call it as many times as you want
+greet("Maya");
+greet("Leo");
+
+// A function that hands back a value
+function add(a, b) {
+  return a + b;
+}
+
+const total = add(4, 6);
+console.log(total);
+console.log(add(100, 1));`,
+    caption: "Defining a function does nothing on its own. The code inside only runs when you call it with parentheses."
+  }],
+  mistake: {
+    code: `function square(n) {
+  n * n;
+}
+
+console.log(square(4));`,
+    result: "Prints undefined",
+    fix: `The function does the math but never hands the answer back. Add return: <code>return n * n;</code>`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "Write a function called toFahrenheit that takes a Celsius temperature and returns it in Fahrenheit (multiply by 9, divide by 5, then add 32). Print the result for 0, 25 and 100. You should get 32, 77 and 212.",
+    starter: `// Define toFahrenheit here
+
+
+// Then call it three times
+`,
+    hint: "Inside the function: <code>return celsius * 9 / 5 + 32;</code>",
+    solution: `function toFahrenheit(celsius) {
+  return celsius * 9 / 5 + 32;
+}
+
+console.log(toFahrenheit(0));
+console.log(toFahrenheit(25));
+console.log(toFahrenheit(100));`
+  },
+  quiz: {
+    q: "Inside a function, what is the difference between console.log and return?",
+    options: ["They do the same thing", "console.log shows a value to you; return hands it back to the code", "return prints the value in red"], answer: 1,
+    why: "console.log is for people reading the console. return is how a function gives its answer to the rest of the program."
+  },
+  notes: [
+    "Learners often define a function, forget to call it, and wonder why nothing happens. Make “define, then call” a chant.",
+    "Arrow functions (<code>const add = (a, b) =&gt; a + b;</code>) are common online. Mention that they exist and are the same idea; save them for later.",
+    "Good question to ask the room: “Where does the 10 in total come from?” Trace it back through the return."
+  ]
+},
+{
+  id: "objects", session: 2, minutes: 15,
+  title: "Objects",
+  goal: "Describe one thing with named properties, and read and change them.",
+  body: `
+    <p>An <mark>object</mark> groups related values under names called properties. Arrays are for lists of things; objects describe one thing in detail.</p>
+    <ul>
+      <li>Write properties as <code>name: value</code>, separated by commas, inside curly braces.</li>
+      <li>Read a property with a dot: <code>dog.name</code>. Change or add one the same way.</li>
+    </ul>
+    <p>Most real data on the web, like a list of products or a weather report, is arrays of objects.</p>`,
+  examples: [{
+    mode: "js",
+    code: `const dog = {
+  name: "Biscuit",
+  age: 3,
+  isGoodBoy: true,
+  tricks: ["sit", "shake"]
+};
+
+console.log(dog.name);
+console.log(dog.tricks[1]);
+
+dog.age = 4;           // change a property
+dog.color = "brown";   // add a new one
+console.log(dog);
+
+// A list of objects: how most real data looks
+const students = [
+  { name: "Maya", grade: 92 },
+  { name: "Leo", grade: 78 }
+];
+
+for (const s of students) {
+  console.log(\`\${s.name}: \${s.grade}\`);
+}`,
+    caption: "Properties can hold any kind of value, including arrays and other objects."
+  }],
+  mistake: {
+    code: `const book = { title: "Dune" pages: 412 };`,
+    result: "SyntaxError: Unexpected identifier 'pages'",
+    fix: `Properties need commas between them: <code>{ title: "Dune", pages: 412 }</code>`
+  },
+  challenge: {
+    mode: "js",
+    prompt: "Make an object for a movie with a title, year and rating. Print a sentence like Inception (2010) is rated 8.8, then change the rating and print the sentence again.",
+    starter: `// Your movie object here
+`,
+    hint: "Inside a template literal you can use properties directly: <code>\${movie.title}</code>",
+    solution: `const movie = {
+  title: "Inception",
+  year: 2010,
+  rating: 8.8
+};
+
+console.log(\`\${movie.title} (\${movie.year}) is rated \${movie.rating}\`);
+
+movie.rating = 9;
+console.log(\`\${movie.title} (\${movie.year}) is rated \${movie.rating}\`);`
+  },
+  quiz: {
+    q: `const car = { make: "Honda", year: 2019 }; How do you get the year?`,
+    options: ["car.year", "car(year)", "year.car"], answer: 0,
+    why: "Object name, a dot, then the property name."
+  },
+  notes: [
+    "Real-world hook: open a public JSON file or API response in the browser (for example a weather API). It's all objects and arrays.",
+    "Compare it to a form: the property names are the labels, the values are what's written in."
+  ]
+},
+{
+  id: "dom", session: 3, minutes: 25,
+  title: "Changing the page",
+  goal: "Find elements on the page with JavaScript and change their text and style.",
+  body: `
+    <p>When the browser loads HTML, it builds a live model of the page called the <mark>DOM</mark> (Document Object Model). JavaScript can find any element in it and change it, and the page updates right away.</p>
+    <ol>
+      <li><strong>Find</strong> an element: <code>document.querySelector("#title")</code>. Use <code>#</code> for an id, <code>.</code> for a class, or a tag name like <code>"p"</code>. These are the same selectors CSS uses.</li>
+      <li><strong>Change</strong> it: <code>.textContent</code> for its text, <code>.style</code> for CSS, <code>.classList</code> to add or remove classes.</li>
+      <li><strong>Create</strong> new elements with <code>document.createElement("li")</code> and put them on the page with <code>.append()</code>.</li>
+    </ol>
+    <p>Put your <code>&lt;script&gt;</code> at the bottom of <code>&lt;body&gt;</code>, so the elements exist before your code looks for them.</p>`,
+  examples: [{
+    mode: "page",
+    code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .highlight { background: gold; padding: 4px 8px; }
+  </style>
+</head>
+<body>
+  <h1 id="title">Original title</h1>
+  <p class="intro">This paragraph will change.</p>
+  <ul id="list"></ul>
+
+  <script>
+    // 1. Find elements
+    const title = document.querySelector("#title");
+    const intro = document.querySelector(".intro");
+    const list = document.querySelector("#list");
+
+    // 2. Change them
+    title.textContent = "Changed by JavaScript!";
+    title.style.color = "crimson";
+    intro.classList.add("highlight");
+
+    // 3. Create new elements
+    const colors = ["red", "green", "blue"];
+    for (const color of colors) {
+      const item = document.createElement("li");
+      item.textContent = color;
+      list.append(item);
+    }
+
+    console.log(title.textContent);
+  <\/script>
+</body>
+</html>`,
+    caption: `The HTML says “Original title,” but you never see it: JavaScript changes it as soon as the page loads. In CSS, <code>background-color</code> becomes <code>style.backgroundColor</code> in JavaScript.`
+  }],
+  mistake: {
+    code: `<h1 id="title">Hi</h1>
+<script>
+  const heading = document.querySelector("#heading");
+  heading.textContent = "Hello";
+<\/script>`,
+    result: "TypeError: Cannot set properties of null (setting 'textContent')",
+    fix: `No element has <code>id="heading"</code>, so querySelector found nothing and returned <code>null</code>. Make the selector match the HTML exactly: <code>"#title"</code>.`
+  },
+  challenge: {
+    mode: "page",
+    prompt: "Using JavaScript only (don't edit the HTML): change the heading to your name, make the paragraph text blue, and add two more hobbies to the list.",
+    starter: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1 id="name">Your name here</h1>
+  <p id="bio">I am learning JavaScript.</p>
+  <ul id="hobbies">
+    <li>Reading</li>
+  </ul>
+
+  <script>
+    // Your code here
+
+  <\/script>
+</body>
+</html>`,
+    hint: `Find each element first: <code>const heading = document.querySelector("#name");</code>. For each new hobby: create an li, set its textContent, then append it to the list.`,
+    solution: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1 id="name">Your name here</h1>
+  <p id="bio">I am learning JavaScript.</p>
+  <ul id="hobbies">
+    <li>Reading</li>
+  </ul>
+
+  <script>
+    const heading = document.querySelector("#name");
+    heading.textContent = "Sam Rivera";
+
+    const bio = document.querySelector("#bio");
+    bio.style.color = "blue";
+
+    const hobbies = document.querySelector("#hobbies");
+    const newHobbies = ["Hiking", "Cooking"];
+    for (const hobby of newHobbies) {
+      const item = document.createElement("li");
+      item.textContent = hobby;
+      hobbies.append(item);
+    }
+  <\/script>
+</body>
+</html>`
+  },
+  quiz: {
+    q: `Which line finds the element <p class="note">?`,
+    options: [`document.querySelector("note")`, `document.querySelector(".note")`, `document.querySelector("#note")`], answer: 1,
+    why: "A dot means class, just like in CSS. # would look for id=\"note\", and a bare word looks for a tag named note."
+  },
+  notes: [
+    "Show the DOM live: in a real browser, open DevTools → Elements on a page with this code. The li elements JavaScript created show up there, but not in View Source.",
+    "Stick to textContent rather than innerHTML for beginners. It's simpler and safer.",
+    "This is the turning point of the course: the code they've learned now changes something they can see."
+  ]
+},
+{
+  id: "events", session: 3, minutes: 25,
+  title: "Reacting to clicks and typing",
+  goal: "Run code when the user clicks a button or types in a box.",
+  body: `
+    <p>An <mark>event</mark> is something that happens on the page: a click, a key press, typing in a box. <code>addEventListener</code> tells an element: when this event happens, run this function.</p>
+    <pre class="code">button.addEventListener("click", function () {
+  // code here runs on every click
+});</pre>
+    <p>Text boxes have a <code>.value</code> property that holds whatever the user has typed. It is always a string, even if they type a number.</p>`,
+  examples: [{
+    mode: "page",
+    code: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    button { font-size: 18px; padding: 8px 16px; }
+    #count { font-size: 48px; font-weight: bold; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <div id="count">0</div>
+  <button id="add">+1</button>
+  <button id="reset">Reset</button>
+
+  <p>
+    <label for="name">Your name:</label>
+    <input id="name" placeholder="Type here">
+  </p>
+  <p id="hello">Hello, stranger!</p>
+
+  <script>
+    let count = 0;
+    const display = document.querySelector("#count");
+
+    document.querySelector("#add").addEventListener("click", function () {
+      count = count + 1;
+      display.textContent = count;
+    });
+
+    document.querySelector("#reset").addEventListener("click", function () {
+      count = 0;
+      display.textContent = count;
+    });
+
+    const nameInput = document.querySelector("#name");
+    nameInput.addEventListener("input", function () {
+      document.querySelector("#hello").textContent = "Hello, " + nameInput.value + "!";
+    });
+  <\/script>
+</body>
+</html>`,
+    caption: `Click the buttons and type in the box. <code>count</code> is the number JavaScript remembers; <code>textContent</code> is what's shown. The listener's job is to keep them in sync.`
+  }],
+  mistake: {
+    code: `function sayHi() {
+  console.log("Hi!");
+}
+
+button.addEventListener("click", sayHi());`,
+    result: "Prints Hi! once when the page loads; clicking does nothing",
+    fix: `The parentheses in <code>sayHi()</code> mean “run it now.” Pass the function itself so the browser can run it later: <code>addEventListener("click", sayHi)</code>`
+  },
+  challenge: {
+    mode: "page",
+    prompt: "Make the button switch the page between light and dark. When it's clicked, add or remove the class dark on the body. The CSS for .dark is already written. Bonus: change the button's text to say Light mode or Dark mode.",
+    starter: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; transition: background 0.3s; }
+    .dark { background: #1d1f27; color: #f2f2f2; }
+    button { font-size: 16px; padding: 8px 14px; }
+  </style>
+</head>
+<body>
+  <h1>Night owl?</h1>
+  <p>Press the button to switch themes.</p>
+  <button id="toggle">Dark mode</button>
+
+  <script>
+    // Your code here
+
+  <\/script>
+</body>
+</html>`,
+    hint: `<code>document.body.classList.toggle("dark")</code> adds the class if it's missing and removes it if it's there. <code>classList.contains("dark")</code> tells you which state you're in.`,
+    solution: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; transition: background 0.3s; }
+    .dark { background: #1d1f27; color: #f2f2f2; }
+    button { font-size: 16px; padding: 8px 14px; }
+  </style>
+</head>
+<body>
+  <h1>Night owl?</h1>
+  <p>Press the button to switch themes.</p>
+  <button id="toggle">Dark mode</button>
+
+  <script>
+    const button = document.querySelector("#toggle");
+
+    button.addEventListener("click", function () {
+      document.body.classList.toggle("dark");
+
+      if (document.body.classList.contains("dark")) {
+        button.textContent = "Light mode";
+      } else {
+        button.textContent = "Dark mode";
+      }
+    });
+  <\/script>
+</body>
+</html>`
+  },
+  quiz: {
+    q: "Which event fires every time someone types a character into a text box?",
+    options: [`"click"`, `"input"`, `"load"`], answer: 1,
+    why: `"input" fires on every change to the box's value. "click" is for clicks, and "load" fires once when the page finishes loading.`
+  },
+  notes: [
+    "This is usually the moment it clicks: they've made something interactive. Give them a few minutes just to play.",
+    "The bonus in the challenge uses an if inside an event listener, which ties lessons 5, 9 and 10 together. Point that out.",
+    "Mention that alert() pops up a message in a normal browser. It doesn't work inside this page, so the editors print it to the console instead."
+  ]
+},
+{
+  id: "project", session: 3, minutes: 40,
+  title: "Project: a to-do list",
+  goal: "Combine everything to build a working to-do list.",
+  body: `
+    <p>Time to put it together. You'll build a to-do list where you type a task, add it, and click it to cross it off. The HTML and CSS are done; you write the JavaScript.</p>`,
+  challenge: {
+    mode: "page",
+    steps: [
+      "Find the input, the Add button and the list with querySelector.",
+      "Listen for a click on the Add button.",
+      "Inside the listener, read the input's value. If it's empty, stop with return.",
+      "Create an li, set its textContent to the task, and append it to the list.",
+      "Clear the input so it's ready for the next task: input.value = \"\";",
+      "Bonus: clicking a task toggles the done class. Pressing Enter in the box also adds the task."
+    ],
+    prompt: "Follow the steps in order. Press Run after each one to check your progress.",
+    starter: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 420px; }
+    input { padding: 8px; font-size: 16px; width: 65%; }
+    button { padding: 8px 12px; font-size: 16px; }
+    li { padding: 6px 0; cursor: pointer; }
+    .done { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+  <h1>My To-Do List</h1>
+  <input id="task" placeholder="What needs doing?">
+  <button id="add">Add</button>
+  <ul id="list"></ul>
+
+  <script>
+    // Step 1: find the input, button and list
+
+    // Step 2: listen for clicks on the button
+
+      // Step 3: read the input's value (stop if it's empty)
+
+      // Step 4: create an li and add it to the list
+
+      // Step 5: clear the input
+
+  <\/script>
+</body>
+</html>`,
+    hint: `The listener from lesson 10 and the createElement loop from lesson 9 are most of the answer. To stop early inside a function: <code>if (text === "") { return; }</code>`,
+    solution: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 420px; }
+    input { padding: 8px; font-size: 16px; width: 65%; }
+    button { padding: 8px 12px; font-size: 16px; }
+    li { padding: 6px 0; cursor: pointer; }
+    .done { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+  <h1>My To-Do List</h1>
+  <input id="task" placeholder="What needs doing?">
+  <button id="add">Add</button>
+  <ul id="list"></ul>
+
+  <script>
+    const input = document.querySelector("#task");
+    const addButton = document.querySelector("#add");
+    const list = document.querySelector("#list");
+
+    function addTask() {
+      const text = input.value.trim();
+      if (text === "") {
+        return;
+      }
+
+      const item = document.createElement("li");
+      item.textContent = text;
+
+      // Bonus: click a task to cross it off
+      item.addEventListener("click", function () {
+        item.classList.toggle("done");
+      });
+
+      list.append(item);
+      input.value = "";
+      input.focus();
+    }
+
+    addButton.addEventListener("click", addTask);
+
+    // Bonus: press Enter to add
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        addTask();
+      }
+    });
+  <\/script>
+</body>
+</html>`
+  },
+  extra: `
+    <div class="prose">
+      <h2>Keep your work</h2>
+      <p>Code on this page resets when you reload. To keep your project, open Notepad (Windows) or TextEdit (Mac, in plain-text mode) or VS Code, paste your code, and save it as <code>todo.html</code>. Double-click the file and it opens in your browser. You just made a web page.</p>
+      <h2>Where to go next</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development" target="_blank" rel="noopener">MDN Learn web development</a>: the standard reference, written for beginners.</li>
+        <li><a href="https://javascript.info/" target="_blank" rel="noopener">javascript.info</a>: a free, thorough JavaScript tutorial.</li>
+        <li><a href="https://www.freecodecamp.org/learn" target="_blank" rel="noopener">freeCodeCamp</a>: free hands-on exercises with instant checks.</li>
+      </ul>
+    </div>`,
+  notes: [
+    "Pair learners: one types, one reads the steps and spots mistakes. Swap after step 3.",
+    "When someone is stuck, ask “What does the console say?” before helping. Learning to read errors is the real skill.",
+    "Fast finishers: add a delete button to each task, show a count of tasks left, or save tasks with localStorage."
+  ]
+}
+];
+
+const CHEATS = [
+  ["Print to the console", `console.log("Hi");`, "Shows a value in the console"],
+  ["Comment", `// note to self`, "Ignored by JavaScript"],
+  ["Variable that changes", `let score = 0;`, "Change later with score = 5;"],
+  ["Variable that doesn't", `const name = "Sam";`, "Can't be reassigned"],
+  ["Text with values", "`Hi, ${name}!`", "Template literal, uses backticks"],
+  ["Decision", `if (x > 5) { ... } else { ... }`, "Only one branch runs"],
+  ["Compare", `===  !==  >  <  >=  <=`, "Gives true or false"],
+  ["Combine conditions", `a && b    a || b`, "and / or"],
+  ["List", `const items = ["a", "b"];`, "items[0] is the first item"],
+  ["Add to a list", `items.push("c");`, "items.length counts them"],
+  ["Loop over a list", `for (const item of items) { ... }`, "Runs once per item"],
+  ["Counting loop", `for (let i = 0; i < 5; i++) { ... }`, "Runs 5 times"],
+  ["Function", `function add(a, b) { return a + b; }`, "Define once"],
+  ["Call a function", `add(2, 3)`, "Run it; gives back 5"],
+  ["Object", `const pet = { name: "Rex", age: 2 };`, "pet.name reads a property"],
+  ["Find an element", `document.querySelector("#id")`, "# id, . class, or a tag name"],
+  ["Change text", `el.textContent = "New";`, ""],
+  ["Change style", `el.style.color = "red";`, "background-color → backgroundColor"],
+  ["Add or remove a class", `el.classList.toggle("dark");`, "Also .add() and .remove()"],
+  ["Make an element", `const li = document.createElement("li");`, "Then list.append(li);"],
+  ["React to clicks", `btn.addEventListener("click", function () { ... });`, "Also \"input\", \"keydown\""],
+  ["Read a text box", `input.value`, "Always text; Number(input.value) for math"]
+];
+
+/* ============================================================
+   Helpers and state
+   ============================================================ */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const h = (tag, cls, html) => { const el = document.createElement(tag); if (cls) el.className = cls; if (html != null) el.innerHTML = html; return el; };
+
+function load(key, fallback) { try { const v = localStorage.getItem(key); return v == null ? fallback : JSON.parse(v); } catch (e) { return fallback; } }
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+let done = new Set(load("jsfs-done", []));
+let showNotes = load("jsfs-notes", false);
+
+const totalMinutes = LESSONS.reduce((a, l) => a + l.minutes, 0);
+const lessonNo = id => LESSONS.findIndex(l => l.id === id) + 1;
+const pad = n => String(n).padStart(2, "0");
+
+/* ============================================================
+   Code runner: each run gets a fresh sandboxed iframe
+   ============================================================ */
+const RUNS = {};
+let runSeq = 0;
+
+window.addEventListener("message", e => {
+  const d = e.data;
+  if (!d || typeof d.__jsfs !== "string") return;
+  const handler = RUNS[d.__jsfs];
+  if (handler) handler(d);
+});
+
+function captureScript(token) {
+  return `<script>(function(){var T=${JSON.stringify(token)};function s(t,a,x){try{parent.postMessage({__jsfs:T,t:t,a:a,x:x||null},"*")}catch(e){}}function f(v,d){d=d||0;if(typeof v==="string")return d?JSON.stringify(v):v;if(v===undefined)return"undefined";if(v===null)return"null";if(typeof v==="function")return"function "+(v.name||"")+"()";if(typeof v!=="object")return String(v);if(typeof Element!=="undefined"&&v instanceof Element){return"<"+v.tagName.toLowerCase()+(v.id?' id="'+v.id+'"':"")+(typeof v.className==="string"&&v.className?' class="'+v.className+'"':"")+">"}if(d>2)return Array.isArray(v)?"[...]":"{...}";if(Array.isArray(v))return"["+v.map(function(i){return f(i,d+1)}).join(", ")+"]";try{var k=Object.keys(v);if(!k.length)return"{}";return"{ "+k.map(function(n){return n+": "+f(v[n],d+1)}).join(", ")+" }"}catch(e){return String(v)}}["log","info","warn","error"].forEach(function(m){var o=console[m];console[m]=function(){var a=[].slice.call(arguments).map(function(v){return f(v)});s(m,a);try{o.apply(console,arguments)}catch(e){}}});window.alert=function(m){s("alert",["alert: "+String(m)])};window.prompt=function(m){s("alert",["prompt() doesn't work on this page: "+String(m)]);return null};window.confirm=function(){s("alert",["confirm() doesn't work on this page"]);return false};window.addEventListener("error",function(e){s("error",[e.message],{line:e.lineno});e.preventDefault()});window.addEventListener("unhandledrejection",function(e){s("error",[String(e.reason)])});})();<\/script>`;
+}
+function doneScript(token) {
+  return `<script>parent.postMessage({__jsfs:${JSON.stringify(token)},t:"done",h:Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0)},"*")<\/script>`;
+}
+
+/* Build a document whose line numbers match the editor's, so errors can point at the right line. */
+function buildDoc(code, mode, token) {
+  const cap = captureScript(token);
+  if (mode === "js") {
+    const safe = code.replace(/<\/script/gi, "<\\/script");
+    return `<!DOCTYPE html><html><head><meta charset="utf-8">${cap}</head><body><script>${safe}\n<\/script>${doneScript(token)}</body></html>`;
+  }
+  let doc;
+  const head = code.match(/<head[^>]*>/i);
+  if (head) doc = code.slice(0, head.index + head[0].length) + cap + code.slice(head.index + head[0].length);
+  else {
+    const dt = code.match(/<!doctype[^>]*>/i);
+    doc = dt ? code.slice(0, dt.index + dt[0].length) + cap + code.slice(dt.index + dt[0].length) : cap + code;
+  }
+  return doc + doneScript(token);
+}
+
+function explain(msg) {
+  const m = String(msg || "");
+  let r;
+  if ((r = m.match(/["']?([\w$]+)["']? is not defined/))) return `JavaScript doesn't know anything called <code>${esc(r[1])}</code>. Check the spelling and capital letters. If you meant text, put it in quotes.`;
+  if (/constant variable|invalid assignment to const/i.test(m)) return `A <code>const</code> can't be changed after it's created. Use <code>let</code> if the value needs to change.`;
+  if (/of null|is null|of undefined|is undefined/i.test(m)) return `Something you looked for wasn't found. If you used <code>querySelector</code>, check that the selector matches the HTML exactly (<code>#</code> for id, <code>.</code> for class).`;
+  if (/is not a function/i.test(m)) return `You tried to call something that isn't a function. Check spelling and capitals, like <code>console.log</code> or <code>addEventListener</code>.`;
+  if (/already been declared|redeclaration/i.test(m)) return `This name was already created with <code>let</code> or <code>const</code>. Create it once; after that, change it without the keyword.`;
+  if (/end of input|missing \}/i.test(m)) return `JavaScript reached the end too early. Something was opened and never closed: look for a missing <code>}</code>, <code>)</code> or quote.`;
+  if (/unexpected|invalid|missing|unterminated|SyntaxError/i.test(m)) return `JavaScript couldn't read this line. Look for a missing or extra comma, quote, bracket or parenthesis.`;
+  return "";
+}
+
+/* ============================================================
+   Editor component
+   ============================================================ */
+function makeEditor({ code, mode = "js", label = "Example", autorun = false, placeholder }) {
+  const original = code;
+  const isPage = mode === "page";
+  const wrap = h("div", "ed");
+  const bar = h("div", "ed-bar");
+  bar.append(h("span", "ed-label", `${esc(label)} · ${isPage ? "HTML page" : "JavaScript"}`));
+  const runBtn = h("button", "ed-btn run", `Run<kbd>Ctrl+Enter</kbd>`); runBtn.type = "button";
+  const resetBtn = h("button", "ed-btn", "Reset"); resetBtn.type = "button";
+  const copyBtn = h("button", "ed-btn", "Copy"); copyBtn.type = "button";
+  bar.append(runBtn, resetBtn, copyBtn);
+
+  const body = h("div", "ed-body");
+  const gutter = h("pre", "gutter"); gutter.setAttribute("aria-hidden", "true");
+  const ta = document.createElement("textarea");
+  ta.value = code;
+  ta.id = "ed-" + (++runSeq);
+  ta.spellcheck = false;
+  ta.setAttribute("wrap", "off");
+  ta.setAttribute("autocapitalize", "off");
+  ta.setAttribute("autocomplete", "off");
+  ta.setAttribute("aria-label", `${label} code editor. Press Escape, then Tab, to leave the editor.`);
+  body.append(gutter, ta);
+
+  const out = h("div", "ed-out");
+  let frameHost;
+  if (isPage) {
+    frameHost = h("div", "browser", `<div class="browser-bar"><i></i><i></i><i></i><span>index.html</span></div>`);
+    out.append(frameHost);
+  } else {
+    frameHost = h("div", "sandbox");
+    wrap.append(frameHost);
+  }
+  const con = h("div", "console", `<div class="console-head">Console</div>`);
+  const lines = h("div", "con-lines");
+  con.append(lines);
+  out.append(con);
+  wrap.append(bar, body, out);
+
+  function sizeUp() {
+    const n = ta.value.split("\n").length;
+    gutter.textContent = Array.from({ length: n }, (_, i) => i + 1).join("\n");
+    ta.style.height = (Math.max(n, 3) * 22 + 24 + 14) + "px";
+  }
+  ta.addEventListener("input", sizeUp);
+  ta.addEventListener("scroll", () => { gutter.scrollTop = ta.scrollTop; });
+
+  function placeholderLine(text) {
+    lines.innerHTML = "";
+    lines.append(h("div", "con-line muted", esc(text)));
+  }
+
+  function addLine(type, text, extra) {
+    const muted = lines.querySelector(".muted");
+    if (muted) muted.remove();
+    if (type === "error") {
+      const ln = h("div", "con-line err");
+      const where = extra && extra.line ? `<span class="where">Line ${extra.line}</span>` : "";
+      const clean = String(text).replace(/^Uncaught\s+/, "");
+      ln.innerHTML = where + esc(clean);
+      const hint = explain(clean);
+      if (hint) ln.append(h("div", "con-hint", hint));
+      lines.append(ln);
+    } else {
+      lines.append(h("div", "con-line " + (type === "warn" || type === "alert" ? type : ""), esc(text)));
+    }
+  }
+
+  let token = null, timer = null, gotOutput = false;
+  function run() {
+    if (token) delete RUNS[token];
+    clearTimeout(timer);
+    token = ta.id + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+    gotOutput = false;
+    lines.innerHTML = "";
+    const myToken = token;
+    RUNS[myToken] = d => {
+      if (myToken !== token) return;
+      if (d.t === "done") {
+        clearTimeout(timer);
+        if (isPage && d.h) frame.style.height = Math.min(Math.max(d.h + 8, 160), 460) + "px";
+        if (!gotOutput) placeholderLine(isPage ? "Nothing logged. Use console.log() to print here." : "The code ran but printed nothing. Add console.log() to see values.");
+        return;
+      }
+      gotOutput = true;
+      const text = (d.a || []).join(" ");
+      addLine(d.t, text, d.x);
+    };
+    const old = frameHost.querySelector("iframe");
+    if (old) old.remove();
+    const frame = document.createElement("iframe");
+    frame.setAttribute("sandbox", "allow-scripts");
+    frame.setAttribute("title", isPage ? "Page preview" : "Code runner");
+    frame.srcdoc = buildDoc(ta.value, mode, myToken);
+    frameHost.append(frame);
+    timer = setTimeout(() => {
+      if (myToken !== token) return;
+      addLine("warn", "No response from this code after 3 seconds. If you wrote a loop that never ends, fix it and press Run again. If even the unchanged examples show this, this viewer is blocking previews: copy the code into a .html file and open it in your browser.");
+    }, 3000);
+  }
+
+  runBtn.addEventListener("click", run);
+  resetBtn.addEventListener("click", () => { setCode(original); if (autorun) run(); else placeholderLine(placeholder); ta.focus(); });
+  copyBtn.addEventListener("click", () => {
+    const ok = () => { copyBtn.textContent = "Copied"; setTimeout(() => copyBtn.textContent = "Copy", 1400); };
+    const fallback = () => { ta.focus(); ta.select(); copyBtn.textContent = "Press Ctrl+C"; setTimeout(() => copyBtn.textContent = "Copy", 2200); };
+    try { navigator.clipboard.writeText(ta.value).then(ok, fallback); } catch (e) { fallback(); }
+  });
+
+  let escaped = false;
+  const insert = text => {
+    let okIns = false;
+    try { okIns = document.execCommand("insertText", false, text); } catch (e) {}
+    if (!okIns) { ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, "end"); sizeUp(); }
+  };
+  ta.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); run(); return; }
+    if (e.key === "Escape") { escaped = true; return; }
+    if (e.key === "Tab" && !escaped && !e.shiftKey) { e.preventDefault(); insert("  "); return; }
+    if (e.key === "Enter" && !e.shiftKey && !e.altKey) {
+      const before = ta.value.slice(0, ta.selectionStart);
+      const lineStart = before.lastIndexOf("\n") + 1;
+      const indent = before.slice(lineStart).match(/^\s*/)[0];
+      const extra = /[{(\[]\s*$/.test(before) ? "  " : "";
+      e.preventDefault();
+      insert("\n" + indent + extra);
+      return;
+    }
+    escaped = false;
+  });
+
+  function setCode(c) { ta.value = c; sizeUp(); }
+
+  sizeUp();
+  if (autorun) requestAnimationFrame(run);
+  else placeholderLine(placeholder || "Press Run to see the output.");
+
+  return { el: wrap, run, setCode, focus: () => ta.focus() };
+}
+
+/* ============================================================
+   Page renderers
+   ============================================================ */
+const page = document.getElementById("page");
+const rail = document.getElementById("rail");
+
+function renderRail(current) {
+  rail.innerHTML = "";
+  const top = h("div", "rail-group");
+  top.append(railLink("overview", "", "Course overview", current));
+  rail.append(top);
+  for (const s of SESSIONS) {
+    const g = h("div", "rail-group");
+    g.append(h("div", "rail-label", `Session ${s.n} · ${s.name}`));
+    for (const l of LESSONS.filter(x => x.session === s.n)) g.append(railLink(l.id, pad(lessonNo(l.id)), l.title, current));
+    rail.append(g);
+  }
+  const end = h("div", "rail-group");
+  end.append(h("div", "rail-label", "Reference"));
+  end.append(railLink("cheatsheet", "", "Cheat sheet", current));
+  rail.append(end);
+}
+function railLink(id, num, title, current) {
+  const a = h("a", "", `<span class="num">${num}</span><span>${esc(title)}</span><span class="tick">${done.has(id) ? "✓" : ""}</span>`);
+  a.href = "#" + id;
+  if (id === current) a.setAttribute("aria-current", "page");
+  return a;
+}
+
+function updateProgress() {
+  const n = LESSONS.filter(l => done.has(l.id)).length;
+  document.getElementById("progress-text").textContent = `${n} of ${LESSONS.length} done`;
+  document.getElementById("progress-fill").style.width = (n / LESSONS.length * 100) + "%";
+}
+
+function notesBlock(items, title = "Teaching notes") {
+  const box = h("aside", "notes");
+  box.append(h("h3", "", title));
+  const ul = h("ul");
+  for (const n of items) ul.append(h("li", "", n));
+  box.append(ul);
+  return box;
+}
+
+function renderOverview() {
+  const hero = h("section", "hero", `
+    <span class="eyebrow"><span>${LESSONS.length} lessons</span><span>3 sessions</span><span>about ${Math.round(totalMinutes / 30) / 2} hours</span></span>
+    <h1>JavaScript First Steps</h1>
+    <p>A hands-on introduction to JavaScript for people who have never written code. Every example runs right on this page, so there's nothing to install.</p>`);
+  page.append(hero);
+
+  const tryIt = h("section");
+  tryIt.append(h("p", "section-label", "Try it now"));
+  tryIt.append(makeEditor({
+    code: `// Change "friend" to your name, then press Run
+const name = "friend";
+
+console.log("Hello, " + name + "!");
+console.log("Your name has " + name.length + " letters.");`,
+    label: "Warm-up", autorun: true
+  }).el);
+  page.append(tryIt);
+
+  page.append(h("section", "how", `
+    <div><strong>Edit anything</strong><p>Every code box is a real editor. Change the code and see what happens.</p></div>
+    <div><strong>Run it</strong><p>Press Run or Ctrl+Enter (Cmd+Enter on a Mac). Output appears under the code.</p></div>
+    <div><strong>Break it freely</strong><p>Errors are explained in plain English. Reset brings back the original code.</p></div>`));
+
+  page.append(notesBlock([
+    "Each learner needs a laptop with Chrome, Edge, Firefox or Safari. Nothing to install. Share this page's link.",
+    "Teaching notes like this box only appear while the Teaching notes switch (top right) is on. Turn it off before you share your screen if you'd rather learners not see them.",
+    "A rhythm that works for each lesson: explain the idea in 2–3 minutes, run the example together, have everyone predict before pressing Run, then the challenge, then the quiz question as a group.",
+    "The three sessions are sized to run about an hour each. Session 3 runs longest because of the project.",
+    "Progress check marks are saved in each learner's own browser only."
+  ], "Before you teach"));
+
+  for (const s of SESSIONS) {
+    const ls = LESSONS.filter(l => l.session === s.n);
+    const mins = ls.reduce((a, l) => a + l.minutes, 0);
+    const sec = h("section", "session");
+    sec.append(h("div", "session-head", `<h2>Session ${s.n}: ${s.name}</h2><span>${mins} min</span>`));
+    const map = h("div", "map");
+    for (const l of ls) {
+      const a = h("a", "", `<span class="num">${pad(lessonNo(l.id))}</span><span class="t">${esc(l.title)}<span class="g">${esc(l.goal)}</span></span><span class="m">${done.has(l.id) ? '<span class="tick">✓</span>' : ""}${l.minutes} min</span>`);
+      a.href = "#" + l.id;
+      map.append(a);
+    }
+    sec.append(map);
+    page.append(sec);
+  }
+
+  const start = h("div", "lesson-foot");
+  const go = h("a", "btn", "Start lesson 1 →"); go.href = "#web"; go.style.textDecoration = "none";
+  const cs = h("a", "btn ghost", "Cheat sheet"); cs.href = "#cheatsheet"; cs.style.textDecoration = "none";
+  start.append(go, cs);
+  page.append(start);
+}
+
+function renderQuiz(qz) {
+  const box = h("div", "quiz");
+  box.append(h("p", "q", esc(qz.q)));
+  const opts = h("div", "opts");
+  const fb = h("p", "feedback");
+  fb.setAttribute("aria-live", "polite");
+  qz.options.forEach((o, i) => {
+    const b = h("button", "opt", `<span class="key">${"ABC"[i]}</span><span>${esc(o)}</span>`);
+    b.type = "button";
+    b.addEventListener("click", () => {
+      if (i === qz.answer) {
+        b.classList.add("is-right");
+        opts.querySelectorAll("button").forEach(x => x.disabled = true);
+        fb.className = "feedback good";
+        fb.textContent = "Correct. " + qz.why;
+      } else {
+        b.classList.add("is-wrong");
+        b.disabled = true;
+        fb.className = "feedback nope";
+        fb.textContent = "Not quite. Try another answer.";
+      }
+    });
+    opts.append(b);
+  });
+  box.append(opts, fb);
+  return box;
+}
+
+function renderLesson(l) {
+  const i = lessonNo(l.id);
+  const sess = SESSIONS.find(s => s.n === l.session);
+
+  page.append(h("header", "lesson-head", `
+    <span class="eyebrow"><span>Lesson ${pad(i)} of ${LESSONS.length}</span><span>${l.minutes} min</span><span>Session ${sess.n} · ${sess.name}</span></span>
+    <h1>${esc(l.title)}</h1>
+    <p class="goal">${esc(l.goal)}</p>`));
+
+  if (l.notes) page.append(notesBlock(l.notes));
+
+  page.append(h("section", "prose", l.body));
+
+  (l.examples || []).forEach(ex => {
+    const sec = h("section");
+    sec.append(makeEditor({
+      code: ex.code, mode: ex.mode, label: "Example",
+      autorun: ex.mode === "page",
+      placeholder: "Predict what will print, then press Run."
+    }).el);
+    if (ex.caption) sec.append(h("p", "caption", ex.caption));
+    page.append(sec);
+  });
+
+  if (l.mistake) {
+    const sec = h("section");
+    sec.append(h("p", "section-label", "Common mistake"));
+    sec.append(h("div", "mistake", `
+      <div class="wrong"><span class="tag">Wrong</span><pre class="code">${esc(l.mistake.code)}</pre><div class="result">${esc(l.mistake.result)}</div></div>
+      <div class="right"><span class="tag">Fix</span><p>${l.mistake.fix}</p></div>`));
+    page.append(sec);
+  }
+
+  if (l.challenge) {
+    const c = l.challenge;
+    const sec = h("section", "challenge");
+    sec.append(h("p", "section-label", l.id === "project" ? "Build it" : "Your turn"));
+    const task = h("div", "task");
+    task.append(h("p", "", esc(c.prompt)));
+    if (c.steps) {
+      const ol = h("ol", "steps");
+      c.steps.forEach(s => ol.append(h("li", "", esc(s))));
+      task.append(ol);
+    }
+    sec.append(task);
+    const ed = makeEditor({
+      code: c.starter, mode: c.mode, label: "Your turn",
+      autorun: c.mode === "page",
+      placeholder: "Write your code, then press Run."
+    });
+    sec.append(ed.el);
+    const reveals = h("div", "reveals");
+    if (c.hint) reveals.append(h("details", "reveal", `<summary>Hint</summary><div><p>${c.hint}</p></div>`));
+    const sol = h("details", "reveal", `<summary>Show a solution</summary>`);
+    const inner = h("div");
+    inner.append(h("pre", "code", esc(c.solution)));
+    const loadBtn = h("button", "btn ghost", "Load into the editor and run");
+    loadBtn.type = "button";
+    loadBtn.addEventListener("click", () => { ed.setCode(c.solution); ed.run(); ed.el.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    inner.append(loadBtn);
+    sol.append(inner);
+    reveals.append(sol);
+    sec.append(reveals);
+    page.append(sec);
+  }
+
+  if (l.quiz) {
+    const sec = h("section");
+    sec.append(h("p", "section-label", "Check yourself"));
+    sec.append(renderQuiz(l.quiz));
+    page.append(sec);
+  }
+
+  if (l.extra) page.append(h("section", "", l.extra));
+
+  const foot = h("div", "lesson-foot");
+  const doneBtn = h("button", "btn ghost done-btn", "");
+  doneBtn.type = "button";
+  const paint = () => {
+    const on = done.has(l.id);
+    doneBtn.setAttribute("aria-pressed", String(on));
+    doneBtn.textContent = on ? "✓ Done" : "Mark as done";
+  };
+  paint();
+  doneBtn.addEventListener("click", () => {
+    done.has(l.id) ? done.delete(l.id) : done.add(l.id);
+    save("jsfs-done", [...done]);
+    paint(); updateProgress(); renderRail(l.id);
+  });
+  foot.append(doneBtn, h("span", "spacer"));
+  const prev = LESSONS[i - 2], next = LESSONS[i];
+  if (prev) { const a = h("a", "btn ghost", "← " + esc(prev.title)); a.href = "#" + prev.id; a.style.textDecoration = "none"; foot.append(a); }
+  const n = h("a", "btn", next ? esc(next.title) + " →" : "Cheat sheet →");
+  n.href = "#" + (next ? next.id : "cheatsheet"); n.style.textDecoration = "none";
+  foot.append(n);
+  page.append(foot);
+}
+
+function renderCheats() {
+  page.append(h("header", "lesson-head", `
+    <span class="eyebrow"><span>Reference</span></span>
+    <h1>Cheat sheet</h1>
+    <p class="goal">Everything from the course on one page. Keep it open while you code.</p>`));
+  const rows = CHEATS.map(([a, b, c]) => `<tr><td>${esc(a)}</td><td><code>${esc(b)}</code></td><td>${esc(c)}</td></tr>`).join("");
+  page.append(h("div", "ref-table-wrap", `<table><thead><tr><th>To do this</th><th>Write</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`));
+  const sec = h("section", "prose", `
+    <h2>Reading an error message</h2>
+    <ol>
+      <li>Find the line number. The mistake is on that line or just above it.</li>
+      <li>Read the first word: <code>ReferenceError</code> means a name JavaScript doesn't know, <code>TypeError</code> means the right name used the wrong way, and <code>SyntaxError</code> means a typo in the code's punctuation.</li>
+      <li>Change one thing and run again.</li>
+    </ol>`);
+  page.append(sec);
+}
+
+/* ============================================================
+   Routing
+   ============================================================ */
+function route() {
+  const id = (location.hash || "#overview").slice(1);
+  Object.keys(RUNS).forEach(k => delete RUNS[k]);
+  page.innerHTML = "";
+  const lesson = LESSONS.find(l => l.id === id);
+  if (lesson) renderLesson(lesson);
+  else if (id === "cheatsheet") renderCheats();
+  else renderOverview();
+  renderRail(lesson ? lesson.id : (id === "cheatsheet" ? "cheatsheet" : "overview"));
+  window.scrollTo(0, 0);
+  document.title = lesson ? `${lesson.title} · JavaScript First Steps` : "JavaScript First Steps";
+}
+
+const notesToggle = document.getElementById("notes-toggle");
+function applyNotes() {
+  document.body.classList.toggle("show-notes", showNotes);
+  notesToggle.setAttribute("aria-pressed", String(showNotes));
+}
+notesToggle.addEventListener("click", () => { showNotes = !showNotes; save("jsfs-notes", showNotes); applyNotes(); });
+
+window.addEventListener("hashchange", route);
+applyNotes();
+updateProgress();
+route();
+</script>
+</body>
+</html>
